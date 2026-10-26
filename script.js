@@ -3,7 +3,7 @@
    ========================================================= */
 
 // ▼ 教員が設定：GAS の Web アプリ URL（空のままなら送信しません）
-const GAS_URL = '';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbycZvxZBHtkzFOIusxJ9FlCdICeY3sgvhqK0Uw0gMTPp-H_-f3haIAe5ml9ysV7lNUK/exec';
 
 const DEFAULT_BUDGET = 10000;   // 初期画面に最初から入っている初期費用
 const STORAGE_KEY = 'myBudgetApp_v3';
