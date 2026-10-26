@@ -27,8 +27,6 @@ h2 { font-size: 18px; font-weight: 700; margin: 40px 0 8px; }
 
 /* ---------- フォーム ---------- */
 .field { margin: 0 0 20px; border: 0; padding: 0; min-width: 0; }
-.row { display: flex; gap: 12px; }
-.row .field { flex: 1; }
 
 label,
 legend {
@@ -105,6 +103,7 @@ input[type="text"]:focus { outline: none; border-color: #222; }
   align-items: center;
   gap: 12px;
   font-weight: 700;
+  word-break: break-all;
 }
 
 .balance-box {
