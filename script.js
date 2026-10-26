@@ -28,18 +28,18 @@ const STORAGE_KEY = 'myBudgetApp_v1';
        let sh = ss.getSheetByName('Log');
        if (!sh) {
          sh = ss.insertSheet('Log');
-         sh.appendRow(['受信日時', '端末の記録日時', 'クラス', '番号', '氏名',
+         sh.appendRow(['受信日時', '端末の記録日時', 'ユーザー名',
                        '種別', 'カテゴリ', '金額', '使用額合計', '残金', 'ID']);
          sh.setFrozenRows(1);
        }
        // 同じ ID の重複送信は記録しない
        const last = sh.getLastRow();
        if (last > 1) {
-         const ids = sh.getRange(2, 11, last - 1, 1).getValues().flat();
+         const ids = sh.getRange(2, 9, last - 1, 1).getValues().flat();
          if (ids.indexOf(data.id) !== -1) return out_({ ok: true, dup: true });
        }
        const s = v => (/^[=+\-@]/.test(String(v)) ? "'" + v : v);
-       sh.appendRow([new Date(), data.timestamp, s(data.className), s(data.number), s(data.name),
+       sh.appendRow([new Date(), data.timestamp, s(data.name),
                      data.type, data.category, data.amount, data.spent, data.balance, data.id]);
        return out_({ ok: true });
      } finally {
@@ -52,7 +52,7 @@ const STORAGE_KEY = 'myBudgetApp_v1';
    }
 
    ・生徒ごとの最新残金を一覧したい場合は、別シートに次の式などを入れると便利です
-     =QUERY(Log!C:J, "select C, D, E, sum(H), min(J) where F = '購入' group by C, D, E", 1)
+     =QUERY(Log!C:H, "select C, sum(F), min(H) where D = '購入' group by C", 1)
    --------------------------------------------------------- */
 
 
@@ -108,7 +108,7 @@ function showScreen(name) {
 
 function render() {
   const u = state.user;
-  $('user-label').textContent = u.className + ' ' + u.number + '番 ' + u.name;
+  $('user-label').textContent = u.name;
   $('balance').textContent = yen(balance());
   $('spent').textContent = '使用額 ' + yen(spentTotal()) + ' / 初期費用 ' + yen(INITIAL_BUDGET);
 
@@ -139,15 +139,13 @@ function renderSync() {
 /* ---------- 登録 ---------- */
 $('form-register').addEventListener('submit', e => {
   e.preventDefault();
-  const className = $('reg-class').value.trim();
-  const number = toHalfWidth($('reg-number').value.trim());
   const name = $('reg-name').value.trim().replace(/\s+/g, ' ');
 
-  if (!className || !number || !name) {
-    setMsg('reg-msg', 'クラス・番号・氏名をすべて入力してください。', true);
+  if (!name) {
+    setMsg('reg-msg', 'ユーザー名を入力してください。', true);
     return;
   }
-  state = { user: { className, number, name }, history: [], queue: [] };
+  state = { user: { name }, history: [], queue: [] };
   enqueue({ type: '登録', category: '', amount: 0 });
   save();
   setMsg('reg-msg', '');
@@ -201,7 +199,7 @@ $('btn-reset').addEventListener('click', () => {
   if (!confirm('本当に削除しますか？（元に戻せません）')) return;
   state = { user: null, history: [], queue: state.queue }; // 未送信分は残して送信を続ける
   save();
-  ['reg-class', 'reg-number', 'reg-name'].forEach(id => { $(id).value = ''; });
+  $('reg-name').value = '';
   setMsg('buy-msg', '');
   showScreen('register');
 });
@@ -213,8 +211,6 @@ function enqueue({ type, category, amount, id, timestamp }) {
   state.queue.push({
     id: id || newId(),
     timestamp: timestamp || stamp(),
-    className: u.className,
-    number: u.number,
     name: u.name,
     type,
     category,
